@@ -4,17 +4,55 @@ from main import app
 
 client = TestClient(app)
 
-def test_registrar_cliente():
-    response = client.post("/api/clientes/", json={"nombre": "John Doe", "email": "john@example.com"})
-    assert response.status_code == 200
-    assert response.json() == {"mensaje": "Cliente registrado exitosamente"}
+class TestUserAPI(unittest.TestCase):
 
-def test_obtener_cliente():
-    client.post("/api/clientes/", json={"nombre": "John Doe", "email": "john@example.com"})
-    response = client.get("/api/clientes/0")
-    assert response.status_code == 200
-    assert response.json() == {"nombre": "John Doe", "email": "john@example.com"}
+    def test_create_user(self):
+        response = client.post("/api/users/", json={
+            "username": "johndoe",
+            "email": "john@example.com",
+            "age": 30
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            "username": "johndoe",
+            "email": "john@example.com",
+            "age": 30
+        })
 
-    response = client.get("/api/clientes/1")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Cliente no encontrado"}
+    def test_read_users(self):
+        response = client.get("/api/users/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.json(), list)
+
+    def test_read_user(self):
+        response = client.get("/api/users/1")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.json(), dict)
+
+    def test_update_user(self):
+        response = client.put("/api/users/1", json={
+            "username": "updatedusername",
+            "email": "updated@example.com",
+            "age": 35
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            "username": "updatedusername",
+            "email": "updated@example.com",
+            "age": 35
+        })
+
+    def test_delete_user(self):
+        response = client.delete("/api/users/1")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            "username": "updatedusername",
+            "email": "updated@example.com",
+            "age": 35
+        })
+        response = client.get("/api/users/1")
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": "User not found"})
+
+if __name__ == '__main__':
+    unittest.main()
