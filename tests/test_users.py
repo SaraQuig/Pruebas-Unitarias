@@ -1,29 +1,38 @@
+import unittest
+import json
+import sys
+import os
+from flask import Flask
+from app.api.endpoints.users import users_bp
 
-from fastapi.testclient import TestClient
-from main import app
+# Obtener la ruta al directorio principal del proyecto
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-client = TestClient(app)
+# Añadir la ruta al directorio principal del proyecto al sys.path
+sys.path.insert(0, project_root)
+import unittest
+import requests
 
-def load_tests(loader, tests, ignore):
-    tests.addTests(doctest.DocFileSuite('../../app/api/endpoints/users.py'))
-    return tests
+class TestUsersAPI(unittest.TestCase):
 
-def test_registrar_cliente():
-    response = client.post("/api/clientes/", json={"nombre": "John Doe", "email": "john@example.com"})
-    assert response.status_code == 200
-    assert response.json() == {"mensaje": "Cliente registrado exitosamente"}
+    base_url = 'http://localhost:5000'  # Asegúrate de que esta URL sea correcta
 
-def test_obtener_cliente():
-    client.post("/api/clientes/", json={"nombre": "John Doe", "email": "john@example.com"})
-    response = client.get("/api/clientes/0")
-    assert response.status_code == 200
-    assert response.json() == {"nombre": "John Doe", "email": "john@example.com"}
+    def test_register_user(self):
+        user_data = {
+            'nombre': 'John',
+            'apellido': 'Doe',
+            'correo': 'john.doe@example.com',
+            'cedula': '1234567890',
+            'celular': '987654321'
+        }
 
-    response = client.get("/api/clientes/1")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Cliente no encontrado"}
+        try:
+            response = requests.post(f'{self.base_url}/users/register', json=user_data)
+            self.assertEqual(response.status_code, 201)
+            self.assertIn("Usuario registrado correctamente", response.json().get('message'))
+        except requests.exceptions.ConnectionError as e:
+            self.fail(f"Error de conexión al intentar realizar la solicitud: {e}")
 
-#pruebas unitarias
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+if __name__ == '__main__':
+    unittest.main()
+

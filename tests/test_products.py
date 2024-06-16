@@ -1,96 +1,40 @@
-import sys
-import os
-from fastapi.testclient import TestClient
+import unittest
+import json
+from flask import Flask
+from app.api.endpoints.products import products_bp
 
-# Añadir la ruta del directorio raíz de tu proyecto al path de Python
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+class TestProductsAPI(unittest.TestCase):
+    def setUp(self):
+        self.app = Flask(__name__)
+        self.app.register_blueprint(products_bp)
+        self.client = self.app.test_client()
 
-# Importar la aplicación FastAPI desde main.py después de añadir la ruta al path
-from app.main import app # type: ignore
-# Crear un cliente de prueba
-client = TestClient(app)
+    def test_add_product(self):
+        # Test de agregar producto exitoso
+        data = {
+            "nombre": "Producto 1",
+            "precio": 100.0,
+            "descripcion": "Descripción del producto 1"
+        }
 
-def load_tests(loader, tests, ignore):
-    tests.addTests(doctest.DocFileSuite('/app/api/endpoints/products.py'))
-    return tests
+        response = self.client.post('/add', json=data)
+        self.assertEqual(response.status_code, 201)
+        # Verificar si la respuesta es un JSON válido
+        data = json.loads(response.data.decode('utf-8'))
 
-def test_create_product():
-    response = client.post("/api/products/", json={
-        "name_pro": "Product 1",
-        "descrip_pro": "Description 1",
-        "cant": 10,
-        "precio": 99.99,
-        "oferta": False
-    })
-    assert response.status_code == 200
-    assert response.json() == {
-        "id_pro": 1,
-        "name_pro": "Product 1",
-        "descrip_pro": "Description 1",
-        "cant": 10,
-        "precio": 99.99,
-        "oferta": False
-    }
+        # Verificar si el mensaje esperado está en la respuesta
+        self.assertIn("Producto añadido correctamente", data['message'])
 
-def test_read_products():
-    response = client.get("/api/products/")
-    assert response.status_code == 200
-    assert response.json() == [{
-        "id_pro": 1,
-        "name_pro": "Product 1",
-        "descrip_pro": "Description 1",
-        "cant": 10,
-        "precio": 99.99,
-        "oferta": False
-    }]
+        # Test de agregar producto con campos faltantes
+        data_incompleta = {
+            "nombre": "Producto 2",
+            "descripcion": "Descripción del producto 2"
+            # Falta precio
+        }
 
-def test_read_product():
-    response = client.get("/api/products/1")
-    assert response.status_code == 200
-    assert response.json() == {
-        "id_pro": 1,
-        "name_pro": "Product 1",
-        "descrip_pro": "Description 1",
-        "cant": 10,
-        "precio": 99.99,
-        "oferta": False
-    }
+        response_incompleta = self.client.post('/add', json=data_incompleta)
+        self.assertEqual(response_incompleta.status_code, 400)
+        self.assertIn(b"error", response_incompleta.data)
 
-def test_update_product():
-    response = client.put("/api/products/1", json={
-        "name_pro": "Updated Product",
-        "descrip_pro": "Updated Description",
-        "cant": 20,
-        "precio": 79.99,
-        "oferta": True
-    })
-    assert response.status_code == 200
-    assert response.json() == {
-        "id_pro": 1,
-        "name_pro": "Updated Product",
-        "descrip_pro": "Updated Description",
-        "cant": 20,
-        "precio": 79.99,
-        "oferta": True
-    }
-
-def test_delete_product():
-    response = client.delete("/api/products/1")
-    assert response.status_code == 200
-    assert response.json() == {
-        "id_pro": 1,
-        "name_pro": "Updated Product",
-        "descrip_pro": "Updated Description",
-        "cant": 20,
-        "precio": 79.99,
-        "oferta": True
-    }
-
-    response = client.get("/api/products/1")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Product not found"}
-
-#pruebas unitarias
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+if __name__ == '__main__':
+    unittest.main()

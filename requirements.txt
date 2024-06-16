@@ -1,6 +1,3 @@
 pip install psycopg2 fastapi sqlalchemy
 pip install coverage
---Ejecuta las pruebas con cobertura:
-coverage run -m unittest discover tests
-coverage report
-coverage html
+
