@@ -1,1 +1,3 @@
 pip install psycopg2 fastapi sqlalchemy
+pip install coverage
+--Ejecuta las pruebas con cobertura:
