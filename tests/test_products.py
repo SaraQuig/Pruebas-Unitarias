@@ -1,11 +1,17 @@
-import doctest
+import sys
+import os
 from fastapi.testclient import TestClient
-from main import app
 
+# Añadir la ruta del directorio raíz de tu proyecto al path de Python
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+# Importar la aplicación FastAPI desde main.py después de añadir la ruta al path
+from app.main import app # type: ignore
 # Crear un cliente de prueba
 client = TestClient(app)
+
 def load_tests(loader, tests, ignore):
-    tests.addTests(doctest.DocFileSuite('../../app/api/endpoints/products.py'))
+    tests.addTests(doctest.DocFileSuite('/app/api/endpoints/products.py'))
     return tests
 
 def test_create_product():
@@ -85,5 +91,6 @@ def test_delete_product():
     assert response.json() == {"detail": "Product not found"}
 
 #pruebas unitarias
-if __name__ == '__main__':
+if __name__ == "__main__":
+    import doctest
     doctest.testmod()

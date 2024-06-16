@@ -1,8 +1,12 @@
-import doctest
+
 from fastapi.testclient import TestClient
 from main import app
 
 client = TestClient(app)
+
+def load_tests(loader, tests, ignore):
+    tests.addTests(doctest.DocFileSuite('../../app/api/endpoints/users.py'))
+    return tests
 
 def test_registrar_cliente():
     response = client.post("/api/clientes/", json={"nombre": "John Doe", "email": "john@example.com"})
@@ -18,3 +22,8 @@ def test_obtener_cliente():
     response = client.get("/api/clientes/1")
     assert response.status_code == 404
     assert response.json() == {"detail": "Cliente no encontrado"}
+
+#pruebas unitarias
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
