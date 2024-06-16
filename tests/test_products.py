@@ -67,5 +67,6 @@ class TestProductAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {"detail": "Product not found"})
 
+#Pruebas unitarias utilizando unittest
 if __name__ == '__main__':
     unittest.main()
