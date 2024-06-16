@@ -1,3 +1,4 @@
+import unittest
 from fastapi.testclient import TestClient
 from main import app
 
@@ -79,3 +80,7 @@ def test_delete_product():
     response = client.get("/api/products/1")
     assert response.status_code == 404
     assert response.json() == {"detail": "Product not found"}
+
+#Prueba unitaria usando unittest
+if __name__ == '__main__':
+    unittest.main()
